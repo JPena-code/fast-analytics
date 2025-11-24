@@ -1,4 +1,4 @@
 from . import constants
-from .environments import Settings as environments
+from .environments import environ
 
-__all__ = ["environments", "constants"]
+__all__ = ["constants", "environ"]
