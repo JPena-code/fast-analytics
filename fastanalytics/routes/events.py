@@ -7,7 +7,6 @@ from fastapi.routing import APIRouter
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import col, func, select
 
-from ..config import constants
 from ..db import approximate_row_count
 from ..db.timescale.functions import time_bucket
 from ..depends import PageQuery, PageQueryAgg, Session
@@ -226,8 +225,9 @@ def create_event(request: Request, session: Session, payload: EventCreate):
     except SQLAlchemyError as e_sql:
         session.rollback()
         request.state.logger.exception(
-            "Database error: processing request %s",
-            request.headers.get(constants.REQ_ID_HEADER),
+            # TODO: Add a correlational middleware to have a request ID
+            "Database error: processing request ...",
+            # request.headers.get(constants.REQ_ID_HEADER),
             exc_info=e_sql,
         )
         raise HTTPException(
