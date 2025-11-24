@@ -1,3 +1,3 @@
-from .logger import MessageLoggerMiddleware
+from .logger import LoggerMiddleware
 
-__all__ = ["MessageLoggerMiddleware"]
+__all__ = ["LoggerMiddleware"]

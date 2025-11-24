@@ -1,13 +1,12 @@
 import copy
-import time
 import uuid
 from http import HTTPStatus
 from typing import TYPE_CHECKING
 
 from starlette.datastructures import URL, MutableHeaders
 
+from .. import get_logger
 from ..config import constants
-from ..entrypoints import get_logger
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -43,7 +42,7 @@ def _extract_res_info(message: "Message") -> "TASGILoggerInfo":
     }
 
 
-class MessageLoggerMiddleware:
+class LoggerMiddleware:
     def __init__(self, app: "ASGIApp") -> None:
         self.app = app
         logger = None
@@ -56,10 +55,6 @@ class MessageLoggerMiddleware:
     async def __call__(self, scope: "Scope", receive: "Receive", send: "Send") -> None:
         async def logger_send(message: "Message") -> None:
             if message["type"] == "http.response.start":
-                headers = MutableHeaders(raw=message["headers"])
-                headers.append(
-                    constants.RES_TIME_ELAPSE, f"{time.perf_counter() - start_response:.3f}s"
-                )
                 extra_info["response"] = _extract_res_info(message)
             await send(message)
 
@@ -68,9 +63,9 @@ class MessageLoggerMiddleware:
             return await self.app(scope, receive, send)
 
         extra_info["request"] = _extract_req_info(scope)
-        start_response = time.perf_counter()
         headers = MutableHeaders(scope=scope)
-        headers.update({constants.REQ_ID_HEADER: str(uuid.uuid4())})
+        if not headers.get(constants.REQ_ID_HEADER):
+            headers.update({constants.REQ_ID_HEADER: str(uuid.uuid4())})
         try:
             await self.app(scope, receive, logger_send)
         finally:
