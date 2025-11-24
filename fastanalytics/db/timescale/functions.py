@@ -24,7 +24,7 @@ def approximate_row_count(model: "type[BaseHyperModel]") -> "Function[int]":
 def time_bucket(
     width: str,
     column: "Mapped[Any]",
-    timezone: datetime | None = None,
+    timezone: "datetime | None" = None,
     origin: str | None = None,
     offset: str | None = None,
 ) -> "Function[datetime]":
