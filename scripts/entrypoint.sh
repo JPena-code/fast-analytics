@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
-# shellcheck source=/opt/.venv/bin/activate
-source /opt/.venv/bin/activate
+fatal()
+{
+    echo "[FATAL] unable to: $*"
+    exit 1
+}
 
-X_PORT="${PORT:-8000}"
-X_HOST="${HOST:-0.0.0.0}"
+# TODO: handle override environment variables by cmd arguments
+# or enable the final user to specify a path to a .env file
+# that has to be mounted in container
+export ENVIRONMENT=prod
+export TIMEZONE=UTC
+export APP='{"host": "0.0.0.0", "port": 8080}'
 
-X_MODULE="${MODULE:-app.scr.main}"
-
-cd /opt || exit 1
-python -m uvicorn "$X_MODULE:app" --port "$X_PORT" --host "$X_HOST"
+python3 -m fastanalytics || fatal "Start python app"

@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-# shellcheck source=/opt/.venv/bin/activate
-source /opt/.venv/bin/activate
-
 python -m pip install --upgrade --no-cache-dir pip
 
-cd /opt/app || exit 1
+cd /opt/app/dist || exit 1
 
-pip install --no-cache-dir .
+wheel_package=$(find . -name "*.whl" -print -quit)
+
+pip install -U --no-cache-dir --quiet "$wheel_package"
 pip cache purge
-
-deactivate
