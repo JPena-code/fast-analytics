@@ -31,10 +31,10 @@
   - [Example Endpoints](#example-endpoints)
     - [Retrieve Events](#retrieve-events)
     - [Add Event](#add-event)
+    - [Aggregated Events](#aggregated-events)
 - [Examples](#examples)
   - [Python Client Example](#python-client-example)
 - [Future Tasks](#future-tasks)
-- [Contributing](#contributing)
 - [License](#license)
 
 </details>
@@ -55,6 +55,7 @@ This project was inspired by the concepts and techniques demonstrated in [this v
 - **TimescaleDB Integration**: Optimized for time-series data.
 - **Modular Design**: Easy to extend and maintain.
 - **Pre-commit Hooks**: Ensures code quality and consistency.
+- **Docker** Docker build and deploy integration
 
 ---
 
@@ -71,26 +72,25 @@ This project was inspired by the concepts and techniques demonstrated in [this v
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/JPena-code/analytics-retrieval-template.git
-   cd analytics-retrieval-template
+   git clone https://github.com/JPena-code/fast-retrieval.git
+   cd fastanalytics
    ```
 
 2. Build the Docker container:
 
    ```bash
-   docker build -t analytics-retrieval .
+   docker build -t fastanalytics .
    ```
 
-3. Run the setup script:
+3. Run the image created, the environment variables can be pass over the command line with the `-e or --env-file` argument (take as reference [.app.env.example](.app.env.example) to see expected environment variables), or mounting a volume in the containing with an .env file and pass the path to that file as an argument to the `docker run` command:
 
    ```bash
-   ./scripts/setup.sh
-   ```
+   # using a .env file mounted in container
+   docker run -v <local-path>:<container-path> fastanalytics <container path>
 
-4. Start the application:
-
-   ```bash
-   ./scripts/entrypoint.sh
+   # using -e or --env-file
+   docker run -e ENVIRONMENT=prod -e TIMEZONE=UTC -e ... fastanalytics
+   docker run --env-file ./.env fastanalytics
    ```
 
 ---
@@ -105,7 +105,7 @@ To run the project locally for development purposes, follow these steps:
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
-   uvicorn src.main:app --reload
+   python3 -m fastanalytics
   ```
 
 ## API Endpoints
@@ -113,7 +113,7 @@ To run the project locally for development purposes, follow these steps:
 ### Base URL
 
 ```text
-http://localhost:8000/api/{version}/events
+http://localhost:8000/api/{version}
 ```
 
 ### Example Endpoints
@@ -126,20 +126,34 @@ http://localhost:8000/api/{version}/events
 
     ```json
     {
-      "data": [
-        {
-          "id": 1,
-          "path": "/dummy/path",
-          "agent": "dummy-agent",
-          "ip_address": "127.0.0.1",
-          "session_id": "dummy-session"
+      "metadata": {
+        "status": "success",
+        "message": "string",
+        "pagination": {
+          "pageSize": 500,
+          "page": 1,
+          "totalRecords": 0,
+          "totalPages": 0
         },
+        "timestamp": "string"
+      },
+      "errors": [
         {
-          "id": 2,
-          "path": "/dummy/path/2",
-          "agent": "dummy-agent-2",
-          "ip_address": "172.0.0.1",
-          "session_id": "dummy-session-2"
+          "additionalProp1": "string",
+          "additionalProp2": "string",
+          "additionalProp3": "string"
+        }
+      ],
+      "results": [
+        {
+          "page": "/hone",
+          "agent": "stringstri",
+          "ipAddress": "string",
+          "referrer": "https://example.com/",
+          "sessionId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "duration": 0,
+          "id": 0,
+          "time": "2025-11-25T04:41:57.539Z"
         }
       ]
     }
@@ -153,10 +167,12 @@ http://localhost:8000/api/{version}/events
 
     ```json
     {
-      "path": "/new/path",
-      "agent": "new-agent",
-      "ip_address": "192.168.0.1",
-      "session_id": "new-session"
+      "page": "/hone",
+      "agent": "stringstri",
+      "ip_address": "string",
+      "referrer": "https://example.com/",
+      "session_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "duration": 0
     }
     ```
 
@@ -164,15 +180,68 @@ http://localhost:8000/api/{version}/events
 
     ```json
     {
-      "data": {
-        "id": 3,
-        "path": "/new/path",
-        "agent": "new-agent",
-        "ip_address": "192.168.0.1",
-        "session_id": "new-session"
+      "metadata": {
+        "status": "success",
+        "message": "string",
+      },
+      "errors": [
+        {
+          "additionalProp1": "string",
+          "additionalProp2": "string",
+          "additionalProp3": "string"
+        }
+      ],
+      "result": {
+        "page": "/hone",
+        "agent": "stringstri",
+        "ipAddress": "string",
+        "referrer": "https://example.com/",
+        "sessionId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "duration": 0,
+        "id": 0,
+        "time": "2025-11-25T04:45:39.162Z"
       }
     }
     ```
+
+#### Aggregated Events
+
+- **GET** `/aggregate/{filed}`
+  - Description: Return the aggregation of the duration by {field}
+  - Response:
+
+  ```json
+  {
+    "metadata": {
+      "status": "success",
+      "message": "string",
+      "pagination": {
+        "pageSize": 500,
+        "page": 1,
+        "totalRecords": 0,
+        "totalPages": 0
+      },
+      "timestamp": "string"
+    },
+    "errors": [
+      {
+        "additionalProp1": "string",
+        "additionalProp2": "string",
+        "additionalProp3": "string"
+      }
+    ],
+    "results": [
+      {
+        "field": "string",
+        "interval": "2025-11-25T04:47:44.602Z",
+        "count": 0,
+        "avgDuration": 0,
+        "minDuration": 0,
+        "maxDuration": 0
+      }
+    ]
+  }
+  ```
 
 ---
 
@@ -205,37 +274,10 @@ print(response.json())
 ## Future Tasks
 
 - **Authentication**: Implement OAuth2 for secure access.
-- **Pagination**: Add pagination for large datasets.
+- **TimingMiddleware**: Implement custom middleware for timing
+- **CorrelationalMiddleware**: Implement custom correlational Middleware
 - **Custom Error**: Define a custom schema of errors to notify when something goes wrong
-- **GraphQL Support**: Explore GraphQL for flexible queries.
 - **CI/CD Integration**: Automate testing and deployment.
-
----
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository.
-2. Create a feature branch:
-
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-3. Commit your changes:
-
-   ```bash
-   git commit -m "Add your message here"
-   ```
-
-4. Push to the branch:
-
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-5. Open a pull request.
 
 ---
 
