@@ -11,7 +11,7 @@ authors = [{ name = "Julio Quintero", email = "jequinterope@unal.edu.co" }]
 license = { file = "LICENSE" }
 dependencies = [
     "fastapi>=0.100.0,<0.116.0",
-    "starlette>=0.40.0,<0.47.0",
+    "starlette>=0.49.1,<0.47.0",
     "pydantic >=1.10.13,<3.0.0",
     "pydantic-settings",
     "SQLAlchemy >=2.0.14,<2.1.0",
