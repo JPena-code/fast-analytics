@@ -2,15 +2,12 @@ import json
 import logging
 import logging.config
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Literal
 
 from typing_extensions import override
 
-from ..config import environments
-
-_LOGGER_NAME = "fast-analytics"
-
-_DEBUG_LOGGER = "fast-analytics.debug"
+from .. import _LOGGER_NAME
 
 LOG_RECORD_BUILTIN_ATTRS = {
     "created",
@@ -76,10 +73,6 @@ LOGGING_CONFIG = {
             "handlers": ["console-json"],
             "propagate": False,
         },
-        _DEBUG_LOGGER: {
-            "handlers": ["console-json", "console-standard"],
-            "propagate": False,
-        },
         "sqlalchemy": {"handlers": ["console-json"], "propagate": False},
     },
 }
@@ -133,13 +126,10 @@ class JsonFormatter(logging.Formatter):
         return dict_record
 
 
-def init_loggers() -> None:
-    logging.config.dictConfig(LOGGING_CONFIG)
-    for logger in logging.root.manager.loggerDict:
-        logging.getLogger(logger).setLevel(logging.DEBUG if environments.debug else logging.INFO)
-
-
-def get_logger() -> logging.Logger:
-    if environments.debug:
-        return logging.getLogger(_DEBUG_LOGGER)
-    return logging.getLogger(_LOGGER_NAME)
+def setup_logger(log_level: str, logger_config: Path | None = None) -> None:
+    if logger_config is not None:
+        assert logger_config.exists(), "The logger json file does not exists"
+        logging.config.fileConfig(logger_config)
+    else:
+        logging.config.dictConfig(LOGGING_CONFIG)
+    logging.getLogger(_LOGGER_NAME).setLevel(log_level)
