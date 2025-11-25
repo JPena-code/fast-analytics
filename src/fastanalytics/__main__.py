@@ -33,4 +33,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()  # type: ignore [no-untyped-call]
+    main()
