@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from datetime import datetime, timezone
 from enum import Enum
 from typing import Annotated, Generic, TypeVar
 
@@ -25,9 +24,6 @@ class MetaData(Base):
     status: StatusEnum
     message: str
     pagination: PageMetaData | None = None
-    timestamp: str = Field(
-        default_factory=lambda: datetime.now().astimezone(timezone.utc).isoformat()
-    )
 
 
 class _Envelope(Base, arbitrary_types_allowed=True, validate_by_name=True):
