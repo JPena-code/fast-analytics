@@ -1,0 +1,38 @@
+name: fast-analytics-stack
+
+services:
+    timescale-db:
+        image: timescale/timescaledb:latest-pg17
+        env_file:
+            - .db.env
+        environment:
+            - POSTGRES_DB=web_analytics
+        expose:
+            - 5432
+        networks:
+            - back-tier
+        volumes:
+            - timescale-db:/var/lib/postgresql/data:rw
+    fast-analytics:
+        depends_on:
+            - timescale-db
+        image: fastanalytics:0.1.0
+        build:
+            context: .
+            dockerfile: Dockerfile
+        env_file:
+            - .app.env
+        ports:
+            - 8000:${APP__PORT}
+        environment:
+            - APP__PORT=${APP__PORT}
+            - ENVIRONMENT=prod
+        networks:
+            - back-tier
+
+networks:
+    back-tier:
+        attachable: false
+
+volumes:
+    timescale-db:

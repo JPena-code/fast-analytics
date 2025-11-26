@@ -27,10 +27,12 @@ RUN apt-get update && \
 
 RUN mkdir -p /opt/app/dist
 
-COPY --from=builder /src/dist/*.whl /opt/app/dist
-COPY ./scripts/*.sh /opt/app/scripts
+WORKDIR /opt/app
 
-RUN chmod +x /opt/app/scripts/*
-RUN /opt/app/scripts/setup.sh
+COPY --from=builder /src/dist/*.whl dist
+COPY ./scripts scripts
 
-ENTRYPOINT [ "./scripts/entrypoint.sh" ]
+RUN chmod +x ./scripts/*
+RUN ./scripts/setup.sh
+
+ENTRYPOINT [ "sh", "./scripts/docker-entrypoint.sh" ]
