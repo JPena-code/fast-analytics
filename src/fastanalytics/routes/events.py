@@ -56,7 +56,6 @@ def read_events(request: Request, session: Session, page: PageQuery):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ResponsePage(
-                request=request,
                 status=StatusEnum.error,
                 message="Internal server error",
                 total_records=0,
@@ -65,7 +64,6 @@ def read_events(request: Request, session: Session, page: PageQuery):
         ) from None
     return ResponsePage(
         results=events,
-        request=request,
         status=StatusEnum.success,
         message="Successfully retrieved the model #Events",
         total_records=aprox_size,
@@ -95,7 +93,6 @@ def agg_events(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=ResponsePage(
-                request=request,
                 status=StatusEnum.error,
                 message=f"Invalid field for aggregation: {field}",
                 page=Page.model_validate(page, from_attributes=True),
@@ -106,7 +103,6 @@ def agg_events(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=ResponsePage(
-                request=request,
                 status=StatusEnum.error,
                 message="It is only allowed to aggregate non-numeric fields",
                 page=Page.model_validate(page.model_dump()),
@@ -133,7 +129,6 @@ def agg_events(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=ResponsePage(
-                    request=request,
                     status=StatusEnum.error,
                     message=f"Unknow aggregation function {agg}",
                     page=Page.model_validate(page.model_dump()),
@@ -162,14 +157,12 @@ def agg_events(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ResponsePage(
-                request=request,
                 status=StatusEnum.error,
                 message="Internal server error",
                 page=Page.model_validate(page.model_dump()),
             ).model_dump(exclude_none=True, exclude_unset=True),
         ) from None
     return ResponsePage(
-        request=request,
         status=StatusEnum.success,
         message=f"Aggregated #Event.{field}",
         results=paged_results,
@@ -192,14 +185,12 @@ def find_event(request: Request, session: Session, event_id: int):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=Response(
-                request=request,
                 status=StatusEnum.error,
                 message=f"Event with id {event_id} not found",
             ),
         )
     return Response(
         result=event,
-        request=request,
         status=StatusEnum.success,
         message="Processed successfully",
     )
@@ -233,14 +224,12 @@ def create_event(request: Request, session: Session, payload: EventCreate):
         raise HTTPException(
             status_code=500,
             detail=Response(
-                request=request,
                 status=StatusEnum.error,
                 message="Internal server error",
             ).model_dump(exclude_none=True, exclude_unset=True),
         ) from None
     return Response(
         result=db_obj,
-        request=request,
         status=StatusEnum.success,
         message="Event created successfully",
     )

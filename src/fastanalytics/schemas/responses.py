@@ -2,8 +2,7 @@ from collections.abc import Sequence
 from enum import Enum
 from typing import Annotated, Generic, TypeVar
 
-from fastapi import Request
-from pydantic import BaseModel, Field, NonNegativeInt, model_validator
+from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt, model_validator
 
 from ._base import Base
 from .queries import Page, PageMetaData
@@ -11,7 +10,6 @@ from .queries import Page, PageMetaData
 _TModel = TypeVar("_TModel", bound=BaseModel)
 _ExcludedStatus = Annotated["StatusEnum", Field(exclude=True)]
 _ExcludedMessage = Annotated[str, Field(exclude=True)]
-_ExcludedRequest = Annotated[Request, Field(exclude=True)]
 _ExcludedNonNegativeInt = Annotated[NonNegativeInt, Field(exclude=True)]
 
 
@@ -26,9 +24,10 @@ class MetaData(Base):
     pagination: PageMetaData | None = None
 
 
-class _Envelope(Base, arbitrary_types_allowed=True, validate_by_name=True):
+class _Envelope(Base):
+    model_config = ConfigDict(arbitrary_types_allowed=True, validate_by_name=True)
+
     metadata: MetaData | None = Field(default=None, init=False)
-    request: _ExcludedRequest
     status: _ExcludedStatus
     message: _ExcludedMessage
     # TODO: Define an schema of error details to return to clients
